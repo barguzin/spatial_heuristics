@@ -7,6 +7,9 @@
 Toy examples for heuristics used in locational science.  
 
 ---
+
+## Functions
+
 The functions are located in *spam/core.py*: 
 
 **make_points(n)** -  Generate set of points (sites) on a 2d plane using a normal distribution. Where $n$ is the number of points. Results are written into demand.csv in a root folder.  
@@ -21,6 +24,12 @@ The functions are located in *spam/core.py*:
 
 **plot_solution** - plots solution
 
+## Notebooks 
+
+**check_funs.ipynb** - demo with all of the current functionality
+
 ### Implemented:
 
 1. Greedy Addition for maximal covering 
+
+
