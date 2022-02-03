@@ -167,7 +167,8 @@ def get_covered(r):
         for i in v:
             s = s + demand[i,2]
         #dict_dem[k] = s
-        list_pop.append([k, s])
+        #list_pop.append([k, s])
+        list_pop.append([k, s, len(v)]) # adds count of covered demand points
     #print(dict_dem)
     stacked_pop = np.vstack(list_pop)
 
@@ -176,8 +177,8 @@ def get_covered(r):
     #array_of_total = np.fromiter(dict_fac.items(), dtype=float, count=len(dict_fac))
     #print(array_of_total)
     # save to file 
-    fmt = ['%i', '%f']
-    np.savetxt('total_pop.csv', stacked_pop, delimiter=',', header='facility,total_pop', comments='', fmt=fmt)            
+    fmt = ['%i', '%f', '%i']
+    np.savetxt('total_pop.csv', stacked_pop, delimiter=',', header='facility,total_pop, cnt_demand', comments='', fmt=fmt)            
 
     # add id
     #stacked = np.append(stacked, np.arange(0,stacked.shape[0]).reshape(stacked.shape[0],1), axis=1)
@@ -198,12 +199,13 @@ def get_covered(r):
         pickle.dump(dict_fac, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def naive_greedy(n_sited):
+def naive_greedy(n_sited, sort_par='cnt'):
         """implements a naive greedy search 
         to yield feasible solutions for n-sites maximizing 
         covered demand
         
         n_sited(int): number of facilities to site 
+        sort_par: sorting variable 
         
         saves: sited_facilities.csv
 
@@ -216,7 +218,7 @@ def naive_greedy(n_sited):
         start_time = time.time()
 
         # read files with info 
-        dtype = [('facility', int), ('population', float)]
+        dtype = [('facility', int), ('population', float), ('cnt', int)]
         facility = np.genfromtxt('facility.csv', delimiter=',', skip_header=1)
         demand = np.genfromtxt('demand.csv', delimiter=',', skip_header=1)
         total_pop = np.genfromtxt('total_pop.csv', delimiter=',', skip_header=1, dtype=dtype)
@@ -224,8 +226,14 @@ def naive_greedy(n_sited):
             coverage = pickle.load(handle)
 
         # sort total population for looping
-        sorted_pop = np.sort(total_pop, order='population')
-        sorted_pop = sorted_pop[::-1]
+        if sort_par == 'cnt':
+            sorted_pop = np.sort(total_pop, order=['cnt', 'population']) # add another level of sorting
+            sorted_pop = sorted_pop[::-1]
+            print(sorted_pop[:5])
+        else:
+            sorted_pop = np.sort(total_pop, order=['population']) # add another level of sorting
+            sorted_pop = sorted_pop[::-1]
+            print(sorted_pop[:5]) 
         
 
         # initiate vars 
@@ -287,9 +295,9 @@ def naive_greedy(n_sited):
                 print('----------------------------------------------')
 
         print('facilities sited at the following locations:')
+        print(sited_facilities)
         print(f'final objective value: {obj}')
         print(f'percentage of population covered: {obj/sum(demand[:,2])}')
-        print(sited_facilities)
         print(f'Completed in {(time.time() - start_time)} seconds')
 
         # save sited_id 
@@ -304,6 +312,12 @@ def naive_greedy(n_sited):
 
         sys.stdout = orig_stdout
         f.close()
+
+        print('facilities sited at the following locations:')
+        print(sited_facilities)
+        print(f'final objective value: {obj}')
+        print(f'percentage of population covered: {obj/sum(demand[:,2])}')
+        print(f'Completed in {(time.time() - start_time)} seconds')
 
 
 def plot_solution(patch_radius):

@@ -1,3 +1,4 @@
+[(62, 333., 4) (34, 315., 4) (54, 290., 6) (63, 285., 5) (53, 277., 4)]
 unique:  {25, 2, 10, 45}
 New solution found with objective value 333.0
 The sited facility_id is 62
@@ -48,7 +49,7 @@ New solution found with objective value 1552.0
 The sited facility_id is 11
 ----------------------------------------------
 facilities sited at the following locations:
+[62, 34, 54, 63, 33, 7, 72, 24, 35, 11]
 final objective value: 1552.0
 percentage of population covered: 0.610062893081761
-[62, 34, 54, 63, 33, 7, 72, 24, 35, 11]
-Completed in 0.012004852294921875 seconds
+Completed in 0.005000114440917969 seconds
