@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from . import helpers
 
+import sys 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.distance import cdist
@@ -10,7 +11,7 @@ import pickle
 import pandas as pd
 from datetime import datetime
 from collections import defaultdict
-
+import time
 
 def make_points(n):
     '''Generate set of points (sites) on a 2d plane
@@ -131,7 +132,7 @@ def get_covered(r):
     2: [1]
 
     """
-    dist_matrix = np.genfromtxt('distance_matrix.csv', delimiter=',', skip_header=1)
+    dist_matrix = np.genfromtxt('distance_matrix.csv', delimiter=',')
     demand = np.genfromtxt('demand.csv', delimiter=',', skip_header=1)
 
     rows = dist_matrix.shape[0]
@@ -145,6 +146,7 @@ def get_covered(r):
     for i in range(0,rows): # for each potential facility (n=100)
         for j in range(0,cols): # for each demand point (n=50)
             lst_array.append([i,j,dist_matrix[i,j]])
+            #print(i, j, dist_matrix[i,j])
             
             # if within threshold add to dictionary 
             if dist_matrix[i,j]<=r: 
@@ -187,10 +189,166 @@ def get_covered(r):
     # save dict to file 
     # with open('covered.txt', 'w') as file:
     #     file.write(json.dumps(dict_fac)) # use `json.loads` to do the reverse
-    # with open('covered.csv', 'w') as csv_file:  
-    #     writer = csv.writer(csv_file, quoting=csv.QUOTE_NONE)
-    #     for key, value in dict_fac.items():
-    #         writer.writerow([key, value])
+    with open('covered.csv', 'w') as csv_file:  
+        writer = csv.writer(csv_file)
+        for key, value in dict_fac.items():
+            writer.writerow([key, value])
     
     with open('covered.pickle', 'wb') as handle:
         pickle.dump(dict_fac, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+def naive_greedy(n_sited):
+        """implements a naive greedy search 
+        to yield feasible solutions for n-sites maximizing 
+        covered demand
+        
+        n_sited(int): number of facilities to site 
+        
+        saves: sited_facilities.csv
+
+        """
+
+        orig_stdout = sys.stdout
+        f = open('out.txt', 'w')
+        sys.stdout = f
+
+        start_time = time.time()
+
+        # read files with info 
+        dtype = [('facility', int), ('population', float)]
+        facility = np.genfromtxt('facility.csv', delimiter=',', skip_header=1)
+        demand = np.genfromtxt('demand.csv', delimiter=',', skip_header=1)
+        total_pop = np.genfromtxt('total_pop.csv', delimiter=',', skip_header=1, dtype=dtype)
+        with open('covered.pickle', 'rb') as handle:
+            coverage = pickle.load(handle)
+
+        # sort total population for looping
+        sorted_pop = np.sort(total_pop, order='population')
+        sorted_pop = sorted_pop[::-1]
+        
+
+        # initiate vars 
+        candidate_facilities = total_pop['facility']
+        #print(type(candidate_facilities))
+        sited_facilities = []
+        #all_demand
+        covered_demand = []
+        temp_covered_demand = []
+
+        # set objective to a zero 
+        obj = 0 
+
+        # set the required number of sited facilities 
+        p = 0
+
+        # generate initial guess with sorted array 
+        # loop over potential facilities 
+        for i in sorted_pop:
+            #print(i)
+
+            if p>=n_sited:
+                break 
+
+            else: 
+
+                # save to temp covered
+                temp_covered = coverage[i[0]]
+                #print(temp_covered)
+                temp_covered_demand.append(temp_covered)
+                # flatten the list
+                flat_demand =  [item for sublist in temp_covered_demand for item in sublist]
+                # convert to set for objective calulation
+                uniq_demand = set(flat_demand)
+                print('unique: ', uniq_demand)
+                #print('length of temp covered', len(uniq_demand))
+
+                # calculate total demand covered
+                s = 0
+                for u in uniq_demand:
+                    s = s + demand[u,2]
+                #print(s)
+
+                # compare to obj
+                if s>obj:
+                    obj = s
+                    p = p + 1
+                    sited_facilities.append(i[0]) # site facility
+                    covered_demand = list(uniq_demand)#temp_covered_demand
+                    #print('length of current covered', len(covered_demand))
+                    
+                    print(f'New solution found with objective value {obj}')
+                    print(f'The sited facility_id is {i[0]}')
+                else:
+                    print('bad solution')
+                    # if the solution is inferior, remove covered demand
+                    pass
+
+                print('----------------------------------------------')
+
+        print('facilities sited at the following locations:')
+        print(f'final objective value: {obj}')
+        print(f'percentage of population covered: {obj/sum(demand[:,2])}')
+        print(sited_facilities)
+        print(f'Completed in {(time.time() - start_time)} seconds')
+
+        # save sited_id 
+        #np.savetxt('test.csv', [61, 33, 53, 62, 32, 6, 71, 23, 34, 10, 93], delimiter=',', fmt = '%i')
+        np.savetxt('sited_id.csv', sited_facilities, delimiter=',', header='facility', comments='', fmt='%i')
+
+        # save covered_id 
+        #fmt = 'i'
+        #flat_covered = [item for sublist in covered_demand for item in sublist]
+        np.savetxt('covered_id.csv', covered_demand, delimiter=',', header='demand', comments='', fmt='%i')
+        #np.savetxt('test2.csv', list({0, 1, 2, 3, 5, 8, 9, 10, 12, 14, 15, 16, 17, 19, 20, 24, 25, 26, 27, 31, 32, 33, 34, 36, 39, 42, 45, 48, 49}), delimiter=',', fmt = '%i')
+
+        sys.stdout = orig_stdout
+        f.close()
+
+
+def plot_solution(patch_radius):
+    """plots solution found by heuristic"""
+
+    facility = np.genfromtxt('facility.csv', delimiter=',', skip_header=1)
+    demand = np.genfromtxt('demand.csv', delimiter=',', skip_header=1)    
+    sited_id = np.genfromtxt('sited_id.csv', delimiter=',', skip_header=1, dtype=int)
+    covered_id = np.genfromtxt('covered_id.csv', delimiter=',', skip_header=1, dtype=int)
+
+    #print(facility.shape) 
+    print(sited_id.shape)
+    print(covered_id.shape)
+    #print(sited_id.dtype)
+
+    #print(facility[sited_id,:])
+
+    fig, ax = plt.subplots(figsize=(10,10))
+
+    # plot buffers 
+    for x,y in zip(facility[sited_id,0], facility[sited_id,1]):
+        circle1 = plt.Circle((x,y), radius = patch_radius, color='b', alpha=.1)
+        ax.add_patch(circle1)
+
+    # plot facilities
+    #ax.scatter(facility[:,0], facility[:,1], s = facility[:,2], color='k')
+    ax.scatter(facility[sited_id,0], facility[sited_id,1], color='b', marker='x')
+
+    # plot demand
+    ax.scatter(demand[:,0], demand[:,1], s = demand[:,2], color='k')
+    ax.scatter(demand[covered_id,0], demand[covered_id,1], s=demand[covered_id,2], color='red')
+
+    # label demand points
+    for txt in covered_id:
+        ax.annotate(txt, demand[txt,0:2], color='r', va='bottom', ha='left')
+
+    # label facility points
+    for txt in sited_id:
+        ax.annotate(txt, facility[txt,0:2], color='b', va='top', ha='right')
+
+    
+    #circle1 = plt.Circle(facility[sited_id,0], facility[sited_id,1], 0.1, color='g')
+
+    ax.set_xlim(0,1)
+    ax.set_ylim(0,1)
+    ax.set_title('Maximal Covering Location Problem', fontsize=14)
+
+

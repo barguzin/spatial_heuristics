@@ -1,0 +1,54 @@
+unique:  {25, 2, 10, 45}
+New solution found with objective value 333.0
+The sited facility_id is 62
+----------------------------------------------
+unique:  {33, 2, 36, 5, 39, 10, 45, 25}
+New solution found with objective value 648.0
+The sited facility_id is 34
+----------------------------------------------
+unique:  {32, 33, 2, 3, 36, 5, 39, 9, 10, 12, 45, 19, 25, 26}
+New solution found with objective value 938.0
+The sited facility_id is 54
+----------------------------------------------
+unique:  {32, 33, 2, 3, 36, 5, 39, 9, 10, 12, 45, 19, 25, 26, 31}
+New solution found with objective value 984.0
+The sited facility_id is 63
+----------------------------------------------
+unique:  {32, 33, 2, 3, 36, 5, 39, 9, 10, 12, 45, 19, 25, 26, 31}
+bad solution
+----------------------------------------------
+unique:  {32, 33, 2, 3, 36, 5, 39, 9, 10, 42, 12, 45, 19, 25, 26, 31}
+New solution found with objective value 1051.0
+The sited facility_id is 33
+----------------------------------------------
+unique:  {32, 33, 2, 3, 36, 5, 39, 9, 10, 42, 12, 45, 19, 25, 26, 31}
+bad solution
+----------------------------------------------
+unique:  {0, 2, 3, 5, 9, 10, 12, 15, 19, 20, 24, 25, 26, 31, 32, 33, 36, 39, 42, 45}
+New solution found with objective value 1280.0
+The sited facility_id is 7
+----------------------------------------------
+unique:  {0, 1, 2, 3, 5, 9, 10, 12, 15, 16, 19, 20, 24, 25, 26, 31, 32, 33, 36, 39, 42, 45}
+New solution found with objective value 1329.0
+The sited facility_id is 72
+----------------------------------------------
+unique:  {0, 1, 2, 3, 5, 9, 10, 12, 15, 16, 19, 20, 24, 25, 26, 31, 32, 33, 36, 39, 42, 45}
+bad solution
+----------------------------------------------
+unique:  {0, 1, 2, 3, 5, 9, 10, 12, 15, 16, 19, 20, 24, 25, 26, 31, 32, 33, 36, 39, 42, 45, 48}
+New solution found with objective value 1332.0
+The sited facility_id is 24
+----------------------------------------------
+unique:  {0, 1, 2, 3, 5, 9, 10, 12, 15, 16, 19, 20, 24, 25, 26, 31, 32, 33, 36, 39, 42, 45, 48, 49}
+New solution found with objective value 1377.0
+The sited facility_id is 35
+----------------------------------------------
+unique:  {0, 1, 2, 3, 5, 9, 10, 12, 15, 16, 17, 19, 20, 24, 25, 26, 27, 31, 32, 33, 36, 39, 42, 45, 48, 49}
+New solution found with objective value 1552.0
+The sited facility_id is 11
+----------------------------------------------
+facilities sited at the following locations:
+final objective value: 1552.0
+percentage of population covered: 0.610062893081761
+[62, 34, 54, 63, 33, 7, 72, 24, 35, 11]
+Completed in 0.012004852294921875 seconds
