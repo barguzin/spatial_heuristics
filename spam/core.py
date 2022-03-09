@@ -12,6 +12,7 @@ import pandas as pd
 from datetime import datetime
 from collections import defaultdict
 import time
+import pandas as pd
 
 def make_points(n):
     '''Generate set of points (sites) on a 2d plane
@@ -366,3 +367,134 @@ def plot_solution(patch_radius):
     ax.set_title('Maximal Covering Location Problem', fontsize=14)
 
 
+def greedy_grasp(n_sited, grasp=False):
+
+    """A greedy algorithm for MCLP. 
+    It is better than naive_greedy() because 
+    it re-sorts at every loop iteration. """
+
+    orig_stdout = sys.stdout
+    f = open('out.txt', 'w')
+    sys.stdout = f
+
+    # read files with info 
+    dtype = [('facility', int), ('population', float), ('cnt', int)]
+    facility = np.genfromtxt('facility.csv', delimiter=',', skip_header=1)
+    demand = np.genfromtxt('demand.csv', delimiter=',', skip_header=1)
+    total_pop = np.genfromtxt('total_pop.csv', delimiter=',', skip_header=1, dtype=dtype)
+    with open('covered.pickle', 'rb') as handle:
+        coverage = pickle.load(handle)
+
+    sorted_pop = np.sort(total_pop, order=['population']) # add another level of sorting
+    sorted_pop = sorted_pop[::-1]
+
+    
+    start_time = time.time()
+
+    sited_facilities = []
+    covered_demand = []
+    temp_covered_demand = []
+
+    # set objective to a zero 
+    obj = 0 
+
+    # set the required number of sited facilities 
+    p = 0
+
+    # use while 
+    while p<n_sited:
+
+        sorted_pop = np.sort(total_pop, order=['population']) # add another level of sorting
+        sorted_pop = sorted_pop[::-1]
+
+        temp_covered = coverage[sorted_pop[0][0]]
+        print(temp_covered)
+        temp_covered_demand.append(temp_covered)
+
+        flat_demand = [item for sublist in temp_covered_demand for item in sublist]
+
+        uniq_demand = set(flat_demand) 
+
+        s = 0 
+        for u in uniq_demand:
+            s = s + demand[u,2]
+
+            if s>obj:
+                obj = s 
+                p = p + 1 
+
+                sited_facilities.append(coverage[sorted_pop[0][0]])
+
+                covered_demand = list(uniq_demand)#temp_covered_demand
+                #print('length of current covered', len(covered_demand))
+
+                # recalculate total demand 
+                #covered = 
+
+                    
+                print(f'New solution found with objective value {obj}')
+                print(f'The sited facility_id is {coverage[0,0]}')
+            else:
+                print('bad solution')
+                    # if the solution is inferior, remove covered demand
+                pass
+
+                print('----------------------------------------------')
+
+        print('facilities sited at the following locations:')
+        print(sited_facilities)
+        print(f'final objective value: {obj}')
+        print(f'percentage of population covered: {obj/sum(demand[:,2])}')
+        print(f'Completed in {(time.time() - start_time)} seconds')
+
+    sys.stdout = orig_stdout
+    f.close()
+
+    print('facilities sited at the following locations:')
+    print(sited_facilities)
+    print(f'final objective value: {obj}')
+    print(f'percentage of population covered: {obj/sum(demand[:,2])}')
+    print(f'Completed in {(time.time() - start_time)} seconds')
+
+
+def matrix_to_dict(list_demands, r):
+    """given a set of demand points and a distance matrix 
+    converts it to the dictionary for further processing
+    
+    Inputs: 
+        list_demands - list with demand points still not covered
+    
+    Returns: 
+        dictionary
+
+    """
+
+    dist_matrix = np.genfromtxt('distance_matrix.csv', delimiter=',')
+    demand = pd.read_csv('demand.csv')
+
+    rows = dist_matrix.shape[0]
+    cols = dist_matrix.shape[1]
+
+    lst_array = []
+    dict_fac = defaultdict(list)
+
+    for i in range(0,rows): # for each potential facility (n=100)
+        for j in range(0,cols): # for each demand point (n=50)
+            
+            if dist_matrix[i,j]<=r and j in list_demands: 
+                dict_fac[i].append(j)
+
+    print(len(dict_fac))
+
+    # run through the dictionary and calculate total covered pop
+    list_pop = []
+    for k,v in dict_fac.items():
+        s = 0
+        for i in v:
+            s = s + demand.iloc[i,2]
+        
+        list_pop.append([k, s]) # adds count of covered demand points
+
+    stacked_pop = pd.DataFrame(np.vstack(list_pop), columns=['id', 'pop'])
+
+    return dict_fac, stacked_pop 
